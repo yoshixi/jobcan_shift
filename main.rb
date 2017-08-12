@@ -26,14 +26,29 @@ end
 
  html = agent.get(in_url).content
 
-data = []
+data = Array.new(1){[]}
 doc =  Nokogiri::HTML(html)
-trfirst = doc.css('#month tr:first-child')
-day_list = trfirst.css("th")
-day_list.each do |day|
- data.push(day.text)
+tr_list = doc.css('#month tr')
+
+begin
+  tr_list.each_with_index do |tr, i|
+    tmp = []
+    day_list = tr.css("th, td")
+    day_list.each do |day|
+      txt = day.text.gsub(" ", "").gsub("\n", "")
+      raise if data[0][0] == txt
+      tmp.push(txt)
+    end
+    data[i] = tmp
+  end
+rescue
 end
-puts data[0]
+p data
+
+
+
+
+
 File.open("sample.txt", "w") do |f|
-  f.puts(trfirst)
+  f.puts(data)
 end
