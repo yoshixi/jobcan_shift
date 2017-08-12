@@ -43,12 +43,17 @@ begin
   end
 rescue
 end
-p data
 
+num = data.count - 1
+p num
 
-
-
-
-File.open("sample.txt", "w") do |f|
-  f.puts(data)
+data[0].each_with_index do |el, i|
+ txt = "#{el} 日のシフトお願いします！ "
+ for j in 2..num  do
+  txt += "#{data[j][0]} #{data[j][i]}" if data[j][i] != "-"
+ end
+ puts txt
 end
+
+
+
