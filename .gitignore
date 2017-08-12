@@ -1,0 +1,6 @@
+/.bundle
+/vendor
+Gemfile.lock
+.env
+sample.txt
+*.swp
