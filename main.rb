@@ -3,11 +3,18 @@ require 'mechanize'
 require 'dotenv'
 Dotenv.load
 
+months = {"1": "January", "2": "February", "3": "March", "4": "April", "5": "May", "6": "June", "7": "July", "8": "August", "9": "September", "10": "October", "11": "November", "12": "December"}
+member = {"user1" => "@user1","user2" => "@user2", "user3" => "@user3", "user4" => "@user4"}
+
+puts "何月のシフト？"
+month = gets.chomp.to_sym
+
 agent = Mechanize.new
 agent.user_agent_alias = 'Mac Safari 4'
 
+
 base_url = "https://ssl.jobcan.jp/login/client/?client_login_id=#{ENV['CLIENT_ID']}"
-in_url = 'https://ssl.jobcan.jp/client/shift-schedule/?start_week=sunday&-1=start_week2&name=&group_id=41&group_where_type=main&witr_child_groups=1&work_kind%5B%5D=0&work_kind%5B%5D=-1&work_kind%5B%5D=-1&work_kind%5B%5D=-1&work_kind%5B%5D=-1&work_kind%5B%5D=-1&work_kind%5B%5D=-1&work_kind%5B%5D=-1&tags=&sort_order=no&number_par_page=50&shift_group_id=41&display_type=all&search_type=montr&from%5By%5D=2017&from%5Bm%5D=8&to=&shift_only_show='
+in_url = "https://ssl.jobcan.jp/client/shift-schedule/?start_week=sunday&group_id=41&group_where_type=main&with_child_groups=1&work_kind%5B%5D=0&work_kind%5B%5D=-1&work_kind%5B%5D=-1&work_kind%5B%5D=-1&work_kind%5B%5D=-1&work_kind%5B%5D=-1&work_kind%5B%5D=-1&shift_group_id=41&display_type=all&search_type=month&from%5By%5D=2017&from%5Bm%5D=#{month}"
 agent.get(base_url) do |page|
    mypage =  page.form_with(action: '/login/client') do |form|
     # ログインに必要な入力項目を設定していく
@@ -35,7 +42,7 @@ begin
     tmp = []
     day_list = tr.css("th, td")
     day_list.each do |day|
-      txt = day.text.gsub(" ", "").gsub("\n", "")
+      txt = day.text.gsub(" ", "").gsub("\n", "").gsub("御茶ノ水", "")
       raise if data[0][0] == txt
       tmp.push(txt)
     end
@@ -45,13 +52,21 @@ rescue
 end
 
 num = data.count - 1
-p num
 
-data[0].each_with_index do |el, i|
- txt = "#{el} 日のシフトお願いします！ "
- for j in 2..num  do
-  txt += "#{data[j][0]} #{data[j][i]}" if data[j][i] != "-"
- end
+data[0].each_with_index do |day, i|
+  if i.zero?
+    txt = ""
+    for j in 2..num  do
+     txt += "#{member[data[j][0]]} #{data[j][i]}    "
+    end
+  else
+    day = day.to_i
+    txt = "/remind #チャンネル名 #{months[month]} #{day-1} at 5pm #{day} 日のシフトお願いします！ "
+    for j in 2..num  do
+     txt += "#{member[data[j][0]]} #{data[j][i]}    " if data[j][i] != "-"
+    end
+  end
+
  puts txt
 end
 
